@@ -1,6 +1,6 @@
 # vim:ts=8
 
-VERS	:= 1.51
+VERS	:= 1.52
 
 CC	?= cc
 CFLAGS	?= -O2 -Wall -Wunused -Wmissing-prototypes -Wstrict-prototypes -Wno-misleading-indentation

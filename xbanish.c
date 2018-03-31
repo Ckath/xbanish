@@ -57,14 +57,14 @@ static int motion_type = -1;
 extern char *__progname;
 
 static Display *dpy;
-static int debug = 0, hiding = 0, legacy = 0;
+static int debug = 0, hiding = 0, legacy = 0, movebuf = 0;
 static unsigned char ignored;
 unsigned timeout = 0;
 
 int
 main(int argc, char *argv[])
 {
-	int ch, i;
+	int ch, i, noscroll = 0;
 	XEvent e;
 	XGenericEventCookie *cookie;
 
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		{"mod4", Mod4Mask}, {"mod5", Mod5Mask}
 	};
 
-	while ((ch = getopt(argc, argv, "bdi:t:")) != -1)
+	while ((ch = getopt(argc, argv, "bdi:st:")) != -1)
 		switch (ch) {
         case 'b':
             if (daemon(1, 1) < 0)
@@ -94,6 +94,9 @@ main(int argc, char *argv[])
 					ignored |= mods[i].mask;
 
 			break;
+        case 's':
+            noscroll = 1;
+            break;
         case 't':
             timeout = (unsigned) atoi(optarg);
             break;
@@ -182,11 +185,18 @@ main(int argc, char *argv[])
 			XIDeviceEvent *xie = (XIDeviceEvent *)cookie->data;
 
 			switch (xie->evtype) {
-			case XI_RawMotion:
 			case XI_RawButtonPress:
+                movebuf = 0;
+                if (noscroll && (xie->detail == 4 || xie->detail == 5))
+                    break;
 				show_cursor();
 				break;
-
+			case XI_RawMotion:
+                if (++movebuf > 2) {
+                    movebuf = 0;
+                    show_cursor();
+                }
+                break;
 			case XI_RawButtonRelease:
 				break;
 
@@ -218,6 +228,7 @@ hide_cursor(void)
         XFlush(dpy);
 		hiding = 1;
 	}
+    movebuf = 0;
 }
 
 void
@@ -388,7 +399,7 @@ done:
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-b] [-d] [-i mod] [-t timeout(ms)]\n", __progname);
+	fprintf(stderr, "usage: %s [-b] [-d] [-i mod] [-s] [-t timeout(ms)]\n", __progname);
 	exit(1);
 }
 

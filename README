@@ -1,7 +1,10 @@
 About this fork
 ===============================================================================
-added -t to hide the cursor after it hasn't been moved for x seconds,
-and -b to run daemonized.
+added the following:
+* -t to hide the cursor after it hasn't been moved for x seconds
+* -b to run daemonized.
+* -s to ignore scrolling
+* minor changes
 
 xbanish
 by joshua stein <jcs@jcs.org>
