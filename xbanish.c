@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -58,6 +59,7 @@ extern char *__progname;
 static Display *dpy;
 static int debug = 0, hiding = 0, legacy = 0;
 static unsigned char ignored;
+unsigned timeout = 0;
 
 int
 main(int argc, char *argv[])
@@ -76,8 +78,12 @@ main(int argc, char *argv[])
 		{"mod4", Mod4Mask}, {"mod5", Mod5Mask}
 	};
 
-	while ((ch = getopt(argc, argv, "di:")) != -1)
+	while ((ch = getopt(argc, argv, "bdi:t:")) != -1)
 		switch (ch) {
+        case 'b':
+            if (daemon(1, 1) < 0)
+                err(1, "daemon");
+            break;
 		case 'd':
 			debug = 1;
 			break;
@@ -88,6 +94,9 @@ main(int argc, char *argv[])
 					ignored |= mods[i].mask;
 
 			break;
+        case 't':
+            timeout = (unsigned) atoi(optarg);
+            break;
 		default:
 			usage();
 		}
@@ -113,6 +122,15 @@ main(int argc, char *argv[])
 		legacy = 1;
 		snoop_legacy(DefaultRootWindow(dpy));
 	}
+
+    /* signal handling */
+    signal(SIGALRM, (void *) hide_cursor);
+
+    /* start timeout alarm to hide cursor */
+    if (timeout > 0 && timeout < 1000)
+        ualarm(timeout*1000, 0);
+    else if (timeout > 0)
+        alarm(timeout/1000);
 
 	for (;;) {
 		cookie = &e.xcookie;
@@ -192,11 +210,12 @@ void
 hide_cursor(void)
 {
 	if (debug)
-		printf("keystroke, %shiding cursor\n",
+		printf("%shiding cursor\n",
 		    (hiding ? "already " : ""));
 
 	if (!hiding) {
 		XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+        XFlush(dpy);
 		hiding = 1;
 	}
 }
@@ -209,6 +228,12 @@ show_cursor(void)
 		    (hiding ? "" : "already "));
 
 	if (hiding) {
+        /* reset timer */
+        if (timeout > 0 && timeout < 1000)
+            ualarm(timeout*1000, 0);
+        else if (timeout > 0)
+            alarm(timeout/1000);
+
 		XFixesShowCursor(dpy, DefaultRootWindow(dpy));
 		hiding = 0;
 	}
@@ -363,7 +388,7 @@ done:
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-d] [-i mod]\n", __progname);
+	fprintf(stderr, "usage: %s [-b] [-d] [-i mod] [-t timeout(ms)]\n", __progname);
 	exit(1);
 }
 

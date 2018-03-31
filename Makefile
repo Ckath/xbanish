@@ -1,9 +1,9 @@
 # vim:ts=8
 
-VERS	:= 1.5
+VERS	:= 1.51
 
 CC	?= cc
-CFLAGS	?= -O2 -Wall -Wunused -Wmissing-prototypes -Wstrict-prototypes
+CFLAGS	?= -O2 -Wall -Wunused -Wmissing-prototypes -Wstrict-prototypes -Wno-misleading-indentation
 
 PREFIX	?= /usr/local
 BINDIR	?= $(PREFIX)/bin

@@ -1,13 +1,15 @@
-.Dd $Mdocdate: June 10 2015$
+.Dd $Mdocdate: Mar 31 2018$
 .Dt XBANISH 1
 .Os
 .Sh NAME
 .Nm xbanish
-.Nd hide the X11 mouse cursor when a key is pressed
+.Nd hide the X11 mouse cursor when a key is pressed or mouse isn't moved for some time.
 .Sh SYNOPSIS
 .Nm
+.Op Fl b
 .Op Fl d
 .Op Fl i Ar modifier
+.Op Fl t Ar timeout
 .Sh DESCRIPTION
 .Nm
 hides the X11 mouse cursor when a key is pressed.
@@ -19,12 +21,18 @@ setting
 but the effect is global in the X11 session.
 .Sh OPTIONS
 .Bl -tag -width Ds
+.It Fl b
+Run daemonized.
 .It Fl d
 Print debugging messages to stdout.
 .It Fl i Ar modifier
 Ignore pressed key if
 .Ar modifier
 is used.
+.It Fl t Ar timeout
+Hide cursor after
+.Ar timeout
+ms.
 .El
 .Sh SEE ALSO
 .Xr XFixes 3
