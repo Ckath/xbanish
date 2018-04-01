@@ -129,12 +129,6 @@ main(int argc, char *argv[])
     /* signal handling */
     signal(SIGALRM, (void *) hide_cursor);
 
-    /* start timeout alarm to hide cursor */
-    if (timeout > 0 && timeout < 1000)
-        ualarm(timeout*1000, 0);
-    else if (timeout > 0)
-        alarm(timeout/1000);
-
 	for (;;) {
 		cookie = &e.xcookie;
 		XNextEvent(dpy, &e);
