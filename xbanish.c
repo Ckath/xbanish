@@ -80,26 +80,26 @@ main(int argc, char *argv[])
 
 	while ((ch = getopt(argc, argv, "bdi:st:")) != -1)
 		switch (ch) {
-        case 'b':
-            if (daemon(1, 1) < 0)
-                err(1, "daemon");
-            break;
+		case 'b':
+			if (daemon(1, 1) < 0)
+				err(1, "daemon");
+			break;
 		case 'd':
 			debug = 1;
 			break;
 		case 'i':
 			for (i = 0;
-			    i < sizeof(mods) / sizeof(struct mod_lookup); i++)
+				i < sizeof(mods) / sizeof(struct mod_lookup); i++)
 				if (strcasecmp(optarg, mods[i].name) == 0)
 					ignored |= mods[i].mask;
 
 			break;
-        case 's':
-            noscroll = 1;
-            break;
-        case 't':
-            timeout = (unsigned) atoi(optarg);
-            break;
+		case 's':
+			noscroll = 1;
+			break;
+		case 't':
+			timeout = (unsigned) atoi(optarg);
+			break;
 		default:
 			usage();
 		}
@@ -120,14 +120,14 @@ main(int argc, char *argv[])
 	if (snoop_xinput(DefaultRootWindow(dpy)) == 0) {
 		if (debug)
 			warn("no XInput devices found, using legacy "
-			    "snooping");
+				"snooping");
 
 		legacy = 1;
 		snoop_legacy(DefaultRootWindow(dpy));
 	}
 
-    /* signal handling */
-    signal(SIGALRM, (void *) hide_cursor);
+	/* signal handling */
+	signal(SIGALRM, (void *) hide_cursor);
 
 	for (;;) {
 		cookie = &e.xcookie;
@@ -137,10 +137,10 @@ main(int argc, char *argv[])
 		if (e.type == motion_type)
 			etype = MotionNotify;
 		else if (e.type == key_press_type ||
-		    e.type == key_release_type)
+			e.type == key_release_type)
 			etype = KeyRelease;
 		else if (e.type == button_press_type ||
-		    e.type == button_release_type)
+			e.type == button_release_type)
 			etype = ButtonRelease;
 
 		switch (etype) {
@@ -148,7 +148,7 @@ main(int argc, char *argv[])
 			if (ignored && (e.xkey.state & ignored)) {
 				if (debug)
 					printf("ignoring keystroke %d\n",
-					    e.xkey.keycode);
+						e.xkey.keycode);
 				break;
 			}
 
@@ -164,7 +164,7 @@ main(int argc, char *argv[])
 			if (legacy) {
 				if (debug)
 					printf("created new window, "
-					    "snooping on it\n");
+						"snooping on it\n");
 
 				/* not sure why snooping directly on the window
 				 * doesn't work, so snoop on all windows from
@@ -180,24 +180,24 @@ main(int argc, char *argv[])
 
 			switch (xie->evtype) {
 			case XI_RawButtonPress:
-                movebuf = 0;
-                if (noscroll && (xie->detail == 4 || xie->detail == 5))
-                    break;
+				movebuf = 0;
+				if (noscroll && (xie->detail == 4 || xie->detail == 5))
+					break;
 				show_cursor();
 				break;
 			case XI_RawMotion:
-                if (++movebuf > 2) {
-                    movebuf = 0;
-                    show_cursor();
-                }
-                break;
+				if (++movebuf > 2) {
+					movebuf = 0;
+					show_cursor();
+				}
+				break;
 			case XI_RawButtonRelease:
 				break;
 
 			default:
 				if (debug)
 					printf("unknown XI event type %d\n",
-					    xie->evtype);
+						xie->evtype);
 			}
 
 			XFreeEventData(dpy, cookie);
@@ -215,14 +215,14 @@ hide_cursor(void)
 {
 	if (debug)
 		printf("%shiding cursor\n",
-		    (hiding ? "already " : ""));
+			(hiding ? "already " : ""));
 
 	if (!hiding) {
 		XFixesHideCursor(dpy, DefaultRootWindow(dpy));
-        XFlush(dpy);
+		XFlush(dpy);
 		hiding = 1;
 	}
-    movebuf = 0;
+	movebuf = 0;
 }
 
 void
@@ -230,14 +230,14 @@ show_cursor(void)
 {
 	if (debug)
 		printf("mouse moved, %sunhiding cursor\n",
-		    (hiding ? "" : "already "));
+			(hiding ? "" : "already "));
 
 	if (hiding) {
-        /* reset timer */
-        if (timeout > 0 && timeout < 1000)
-            ualarm(timeout*1000, 0);
-        else if (timeout > 0)
-            alarm(timeout/1000);
+		/* reset timer */
+		if (timeout > 0 && timeout < 1000)
+			ualarm(timeout*1000, 0);
+		else if (timeout > 0)
+			alarm(timeout/1000);
 
 		XFixesShowCursor(dpy, DefaultRootWindow(dpy));
 		hiding = 0;
@@ -294,7 +294,7 @@ snoop_xinput(Window win)
 	XEventClass event_list[numdevs * 2];
 	for (i = 0; i < numdevs; i++) {
 		if (devinfo[i].use != IsXExtensionKeyboard &&
-		    devinfo[i].use != IsXExtensionPointer)
+			devinfo[i].use != IsXExtensionPointer)
 			continue;
 
 		if (!(device = XOpenDevice(dpy, devinfo[i].id)))
@@ -306,13 +306,13 @@ snoop_xinput(Window win)
 			case KeyClass:
 				if (debug)
 					printf("attaching to keyboard device "
-					    "%s (use %d)\n", devinfo[i].name,
-					    devinfo[i].use);
+						"%s (use %d)\n", devinfo[i].name,
+						devinfo[i].use);
 
 				DeviceKeyPress(device, key_press_type,
-				    event_list[ev]); ev++;
+					event_list[ev]); ev++;
 				DeviceKeyRelease(device, key_release_type,
-				    event_list[ev]); ev++;
+					event_list[ev]); ev++;
 				break;
 
 			case ButtonClass:
@@ -321,13 +321,13 @@ snoop_xinput(Window win)
 
 				if (debug)
 					printf("attaching to buttoned device "
-					    "%s (use %d)\n", devinfo[i].name,
-					    devinfo[i].use);
+						"%s (use %d)\n", devinfo[i].name,
+						devinfo[i].use);
 
 				DeviceButtonPress(device, button_press_type,
-				    event_list[ev]); ev++;
+					event_list[ev]); ev++;
 				DeviceButtonRelease(device,
-				    button_release_type, event_list[ev]); ev++;
+					button_release_type, event_list[ev]); ev++;
 				break;
 
 			case ValuatorClass:
@@ -336,11 +336,11 @@ snoop_xinput(Window win)
 
 				if (debug)
 					printf("attaching to pointing device "
-					    "%s (use %d)\n", devinfo[i].name,
-					    devinfo[i].use);
+						"%s (use %d)\n", devinfo[i].name,
+						devinfo[i].use);
 
 				DeviceMotionNotify(device, motion_type,
-				    event_list[ev]); ev++;
+					event_list[ev]); ev++;
 				break;
 			}
 		}
